@@ -1,0 +1,234 @@
+{
+  "description": "Deterministic golden vectors for the A2A message-provenance extension. card_payload_canonical, card_digest and parts[].digest are byte-for-byte reproducible from input_card / input_parts by any conformant impl. token is a JS-signed ES256 JWS verifiable against public_jwk.",
+  "ext_uri": "https://flocker.md/a2a/ext/message-provenance/v1",
+  "metadata_key": "https://flocker.md/a2a/ext/message-provenance/v1/token",
+  "token_typ": "a2a-msg-provenance+jwt",
+  "input_card": {
+    "name": "Ramen Maxxing",
+    "description": "",
+    "supportedInterfaces": [
+      {
+        "url": "https://flocker.md/a/ramen-maxxing-k4xfr/a2a/v1",
+        "protocolBinding": "HTTP+JSON",
+        "protocolVersion": "1.0",
+        "tenant": ""
+      }
+    ],
+    "provider": {
+      "organization": "FLOCKER",
+      "url": "https://flocker.md/"
+    },
+    "version": "1.0.0",
+    "documentationUrl": "",
+    "capabilities": {
+      "streaming": false,
+      "pushNotifications": true,
+      "extensions": [
+        {
+          "uri": "https://flocker.md/a2a/ext/message-provenance/v1",
+          "description": "Attaches a per-message provenance receipt.",
+          "required": false,
+          "params": {
+            "signsMessages": true,
+            "note": "café ☕"
+          }
+        }
+      ]
+    },
+    "securitySchemes": {},
+    "defaultInputModes": [
+      "text/plain"
+    ],
+    "defaultOutputModes": [
+      "text/plain"
+    ],
+    "skills": [
+      {
+        "id": "showcase",
+        "name": "Showcase coordination",
+        "description": "Coordinates launch-week showcase slots.",
+        "tags": [
+          "community",
+          "ramen"
+        ],
+        "examples": [],
+        "inputModes": [],
+        "outputModes": []
+      }
+    ],
+    "signatures": [
+      {
+        "protected": "ignored",
+        "signature": "ignored"
+      }
+    ],
+    "x-flocker": {
+      "lockLLMProvider": false,
+      "theme": "flocker-cyan"
+    }
+  },
+  "input_parts": [
+    {
+      "text": "Ramen Maxxing here — café crème, jalapeño ramen, 100% ☕ vibes. Requesting a showcase slot."
+    },
+    {
+      "raw": "UmFtZW4gQ2x1Yg==",
+      "mediaType": "application/octet-stream",
+      "filename": "club.bin"
+    },
+    {
+      "data": {
+        "request": "showcase-slot",
+        "project": "flocker.md",
+        "week": "2026-07-20",
+        "priority": 1,
+        "contact": "https://flocker.md/a/ramen-maxxing-k4xfr",
+        "nested": {
+          "z": 1,
+          "a": [
+            3,
+            2,
+            1
+          ],
+          "flag": false
+        }
+      },
+      "mediaType": "application/json"
+    },
+    {
+      "url": "https://flocker.md/a/ramen-maxxing-k4xfr/.well-known/agent-card.json",
+      "mediaType": "application/json",
+      "filename": "agent-card.json"
+    }
+  ],
+  "card_payload_canonical": "{\"capabilities\":{\"extensions\":[{\"description\":\"Attaches a per-message provenance receipt.\",\"params\":{\"note\":\"café ☕\",\"signsMessages\":true},\"uri\":\"https://flocker.md/a2a/ext/message-provenance/v1\"}],\"pushNotifications\":true,\"streaming\":false},\"defaultInputModes\":[\"text/plain\"],\"defaultOutputModes\":[\"text/plain\"],\"description\":\"\",\"documentationUrl\":\"\",\"name\":\"Ramen Maxxing\",\"provider\":{\"organization\":\"FLOCKER\",\"url\":\"https://flocker.md/\"},\"skills\":[{\"description\":\"Coordinates launch-week showcase slots.\",\"id\":\"showcase\",\"name\":\"Showcase coordination\",\"tags\":[\"community\",\"ramen\"]}],\"supportedInterfaces\":[{\"protocolBinding\":\"HTTP+JSON\",\"protocolVersion\":\"1.0\",\"url\":\"https://flocker.md/a/ramen-maxxing-k4xfr/a2a/v1\"}],\"version\":\"1.0.0\",\"x-flocker\":{\"lockLLMProvider\":false,\"theme\":\"flocker-cyan\"}}",
+  "card_digest": {
+    "alg": "sha-256",
+    "value": "wBPF_nHzxo1_56oblvXQ_DcTTfxqO44tHfUSLx81lAI"
+  },
+  "parts": [
+    {
+      "input": {
+        "text": "Ramen Maxxing here — café crème, jalapeño ramen, 100% ☕ vibes. Requesting a showcase slot."
+      },
+      "digest": {
+        "src": "text",
+        "alg": "sha-256",
+        "value": "kDlH9TCLrzWf-FoJUGYHqB2Lf2kZESn4NIEdiL8i47s"
+      }
+    },
+    {
+      "input": {
+        "raw": "UmFtZW4gQ2x1Yg==",
+        "mediaType": "application/octet-stream",
+        "filename": "club.bin"
+      },
+      "digest": {
+        "src": "raw",
+        "mediaType": "application/octet-stream",
+        "filename": "club.bin",
+        "alg": "sha-256",
+        "value": "p65O2_Urxlkg5Uwf9xFH5XD77YEwhgx2Lb2DMRvKIss"
+      }
+    },
+    {
+      "input": {
+        "data": {
+          "request": "showcase-slot",
+          "project": "flocker.md",
+          "week": "2026-07-20",
+          "priority": 1,
+          "contact": "https://flocker.md/a/ramen-maxxing-k4xfr",
+          "nested": {
+            "z": 1,
+            "a": [
+              3,
+              2,
+              1
+            ],
+            "flag": false
+          }
+        },
+        "mediaType": "application/json"
+      },
+      "digest": {
+        "src": "data",
+        "mediaType": "application/json",
+        "alg": "sha-256",
+        "value": "D9R2HWuH8aDpTo66rWZ0HVebDM4D1R9CL7Rcwz75qIU"
+      }
+    },
+    {
+      "input": {
+        "url": "https://flocker.md/a/ramen-maxxing-k4xfr/.well-known/agent-card.json",
+        "mediaType": "application/json",
+        "filename": "agent-card.json"
+      },
+      "digest": {
+        "src": "url",
+        "mediaType": "application/json",
+        "filename": "agent-card.json",
+        "alg": "sha-256",
+        "value": "7DCjz1klKSfPs5b3wbAnClZTdtHCznJhVdJi5M4fYEU"
+      }
+    }
+  ],
+  "token": "eyJhbGciOiJFUzI1NiIsInR5cCI6ImEyYS1tc2ctcHJvdmVuYW5jZStqd3QiLCJraWQiOiJtb2NrLWZsb2NrZXIta3dac2dfQnYifQ.eyJpc3MiOiJodHRwczovL2Zsb2NrZXIubWQiLCJzdWIiOiJodHRwczovL2Zsb2NrZXIubWQvYS9yYW1lbi1tYXh4aW5nLWs0eGZyLy53ZWxsLWtub3duL2FnZW50LWNhcmQuanNvbiIsImF1ZCI6Imh0dHBzOi8vcmFtZW5jbHViLnNvL2FnZW50cy9zaG93Y2FzZS1jb29yZGluYXRvciIsImlhdCI6MTc1MjAwMDAwMCwiZXhwIjoxNzUyMDAwMzAwLCJqdGkiOiJnb2xkZW4tdmVjdG9yLWZpeGVkLWp0aS0wMDAxIiwiY2FyZF9kaWdlc3QiOnsiYWxnIjoic2hhLTI1NiIsInZhbHVlIjoid0JQRl9uSHp4bzFfNTZvYmx2WFFfRGNUVGZ4cU80NHRIZlVTTHg4MWxBSSJ9LCJtc2ciOiJnb2xkZW4tdmVjdG9yLWZpeGVkLW1lc3NhZ2UtMDAwMSIsInJvbGUiOiJST0xFX0FHRU5UIiwicGFydHMiOlt7InNyYyI6InRleHQiLCJhbGciOiJzaGEtMjU2IiwidmFsdWUiOiJrRGxIOVRDTHJ6V2YtRm9KVUdZSHFCMkxmMmtaRVNuNE5JRWRpTDhpNDdzIn0seyJzcmMiOiJyYXciLCJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0iLCJmaWxlbmFtZSI6ImNsdWIuYmluIiwiYWxnIjoic2hhLTI1NiIsInZhbHVlIjoicDY1TzJfVXJ4bGtnNVV3Zjl4Rkg1WEQ3N1lFd2hneDJMYjJETVJ2S0lzcyJ9LHsic3JjIjoiZGF0YSIsIm1lZGlhVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24iLCJhbGciOiJzaGEtMjU2IiwidmFsdWUiOiJEOVIySFd1SDhhRHBUbzY2cldaMEhWZWJETTREMVI5Q0w3UmN3ejc1cUlVIn0seyJzcmMiOiJ1cmwiLCJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi9qc29uIiwiZmlsZW5hbWUiOiJhZ2VudC1jYXJkLmpzb24iLCJhbGciOiJzaGEtMjU2IiwidmFsdWUiOiI3RENqejFrbEtTZlBzNWIzd2JBbkNsWlRkdEhDem5KaFZkSmk1TTRmWUVVIn1dLCJtZWRpYSI6ImFwcGxpY2F0aW9uL2pzb24iLCJzY2hlbWEiOiJodHRwczovL2Zsb2NrZXIubWQvc2NoZW1hcy9zaG93Y2FzZS1yZXF1ZXN0L3YxLmpzb24ifQ.3XmyMLiNwWM54nXUOgen2Xc63T0NiJO731_XTa3JTUbGIQvKIZZXG2cvsNToLyvbF_qZspslSa2KaA_qJxLeCQ",
+  "token_header": {
+    "alg": "ES256",
+    "typ": "a2a-msg-provenance+jwt",
+    "kid": "mock-flocker-kwZsg_Bv"
+  },
+  "token_claims": {
+    "iss": "https://flocker.md",
+    "sub": "https://flocker.md/a/ramen-maxxing-k4xfr/.well-known/agent-card.json",
+    "aud": "https://ramenclub.so/agents/showcase-coordinator",
+    "iat": 1752000000,
+    "exp": 1752000300,
+    "jti": "golden-vector-fixed-jti-0001",
+    "card_digest": {
+      "alg": "sha-256",
+      "value": "wBPF_nHzxo1_56oblvXQ_DcTTfxqO44tHfUSLx81lAI"
+    },
+    "msg": "golden-vector-fixed-message-0001",
+    "role": "ROLE_AGENT",
+    "parts": [
+      {
+        "src": "text",
+        "alg": "sha-256",
+        "value": "kDlH9TCLrzWf-FoJUGYHqB2Lf2kZESn4NIEdiL8i47s"
+      },
+      {
+        "src": "raw",
+        "mediaType": "application/octet-stream",
+        "filename": "club.bin",
+        "alg": "sha-256",
+        "value": "p65O2_Urxlkg5Uwf9xFH5XD77YEwhgx2Lb2DMRvKIss"
+      },
+      {
+        "src": "data",
+        "mediaType": "application/json",
+        "alg": "sha-256",
+        "value": "D9R2HWuH8aDpTo66rWZ0HVebDM4D1R9CL7Rcwz75qIU"
+      },
+      {
+        "src": "url",
+        "mediaType": "application/json",
+        "filename": "agent-card.json",
+        "alg": "sha-256",
+        "value": "7DCjz1klKSfPs5b3wbAnClZTdtHCznJhVdJi5M4fYEU"
+      }
+    ],
+    "media": "application/json",
+    "schema": "https://flocker.md/schemas/showcase-request/v1.json"
+  },
+  "public_jwk": {
+    "kty": "EC",
+    "x": "iTf7SZPu3OQMING8QSvjX0A58MThemxC9dh-OuVEIW8",
+    "y": "kA3OQzKBn9ly_TBR31wjL5K3zZcRkpqMqHMK48X5UVU",
+    "crv": "P-256",
+    "kid": "mock-flocker-kwZsg_Bv",
+    "use": "sig",
+    "alg": "ES256"
+  }
+}
