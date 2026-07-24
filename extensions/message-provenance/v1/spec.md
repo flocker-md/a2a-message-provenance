@@ -6,8 +6,9 @@
 - **License:** Apache License 2.0
 - **Depends on:** A2A Protocol v1.0 (specification §8.4 Agent Card Signing, §8.4.1 field presence), RFC 7515 (JWS), RFC 7519 (JWT), RFC 8785 (JCS), RFC 8725 (JWT BCP).
 
-> This is a working draft. Section 11 (Security Considerations) is a stub to be
-> completed in a subsequent revision; all other sections are drafted.
+> This is a working draft (pre-proposal): all sections are drafted and open to
+> revision. The wire format, generation, verification, and Appendix A
+> (§8.4.1 field-behavior table) are normative.
 
 ## 1. Conformance language
 
@@ -405,13 +406,75 @@ This keeps the identity binding stable across that potential change.
 
 ## 11. Security Considerations
 
-> TODO: key substitution, token stripping, replay, cross-context reuse,
-> and blind-signing (Variant A) non-repudiation liability, each with mitigation.
-> Variant B (per-profile keys published in the card) normative sketch. Blind-
-> signing MUSTs: dedicated message-signing keys separate from card keys,
-> scheduled rotation, published expired private keys after a deniability window,
-> rate/abuse controls on the signing endpoint. "Why not a Verifiable Credential
-> / RFC 9421 / plain OAuth" rationale appendix.
+### 11.1 Threat model
+
+| Threat | Attack | Mitigation |
+|--------|--------|------------|
+| Key substitution | Attacker presents its own card and its own JWKS, or points the verifier at an attacker-controlled key URL. | Verifiers resolve keys only from pre-configured trust anchors and **MUST NOT** dereference in-token or in-card key URLs (Section 4). `sub`'s origin **MUST** equal `iss` (Section 8.2). |
+| Token stripping | An intermediary removes the token so the message appears unsigned. | Absence is meaningful only against the signed `signsMessages` declaration; a verifier applying the anti-stripping policy rejects a token-absent message from a declaring sender (Section 8.3). |
+| Rotate-to-undeclare | Attacker strips the token, then mutates the card to drop `signsMessages`. | Verifiers **SHOULD** pin an observed declaration with a TTL; an append-only historical card index (Section 11.4) is the durable defense. |
+| Replay | A valid token is re-presented. | Live mode enforces `exp` and a per-`aud` `jti` cache; `jti` is inserted only after all checks pass (Section 8.2). |
+| Cross-context reuse | A token is lifted into another protocol context or confused with a card signature. | A distinct `typ` (`a2a-msg-provenance+jwt`) enforces domain separation; `aud`, `msg`, and `card_digest` bind the token to one recipient, message, and card version. |
+| Content tampering / relabeling | Part content, `mediaType`, `filename`, or part kind is altered. | Domain-separated per-part digests (Section 7.2): a digest cannot be reinterpreted under a different `src`, media type, or filename. |
+| Card-version rollback | A message is presented as endorsed by a stale or different card version. | `card_digest` pins the exact §8.4.1 signing payload of the endorsing card (Section 7.1). |
+
+These map directly onto the reference implementation's negative test suite.
+
+### 11.2 Non-repudiation and blind signing (Variant A)
+
+In Variant A the platform signs over a digest the sending agent submits and
+never receives message content. This bounds the platform's exposure — it holds
+no plaintext and transmits none — but it also means the platform attests only
+"an agent authenticated as `sub` submitted a message with these digests at this
+time," not the content itself. A token is therefore evidence of endorsement, not
+an admission of content authorship, and the token semantics **MUST** be read
+narrowly.
+
+A conformant Variant A deployment:
+
+- **MUST** use message-signing keys that are separate from the card-signing
+  keys, so a message key compromise does not forge cards and vice versa.
+- **MUST** rotate message-signing keys on a published schedule and expose all
+  historical public keys through the issuer JWKS for verify-later.
+- **SHOULD** publish each message-signing private key after a defined deniability
+  window has elapsed, so that outside that window a signature is no longer
+  probative of a specific signer — a deliberate non-repudiation limit adapted
+  from the DKIM key-rotation remedy.
+- **MUST** apply rate and abuse controls on the signing endpoint, since the
+  endpoint signs on behalf of authenticated agents.
+
+### 11.3 Per-profile keys (Variant B)
+
+Variant B, deferred to a future revision, publishes a per-profile signing key in
+the Agent Card and has the agent (not the platform) sign its own messages. This
+strengthens non-repudiation — the signature binds to a key the profile controls,
+with no blind-signing intermediary — at the cost of per-profile key management
+and card-published key rotation. The claim set and digest construction are
+unchanged; only the key that signs the token and the JWKS it resolves from
+differ. A future revision will specify the card key-publication format and the
+verifier's key-selection rules.
+
+### 11.4 Historical card index
+
+Because `card_digest` pins a card version, verify-later and rotate-to-undeclare
+defenses depend on being able to establish which card version was published at a
+given time. An append-only, timestamped log of card versions (optionally with
+trusted timestamping) is the durable mechanism for decade-scale audit and for
+detecting a card that was mutated to drop a prior declaration. Its format is out
+of scope for this version and is noted as future work.
+
+### 11.5 Why a card-anchored JWT
+
+- **Versus a Verifiable Credential.** The same claims could be expressed as a
+  VC-JWT, and alignment with a VC profile is an open option. This version uses a
+  plain JWT receipt to avoid a dependency on VC tooling and DID resolution: the
+  artifact is a short-lived receipt rather than a long-lived credential, and key
+  trust is established by pinning a JWKS rather than resolving a DID.
+- **Versus RFC 9421 request signing.** That layer signs the transport request
+  and does not survive the hop or pin a card version (Section 9.2); it is
+  complementary, not a substitute.
+- **Versus plain OAuth.** OAuth authorizes access to a resource; it produces no
+  content-bound, third-party-verifiable artifact about a specific message.
 
 ## 12. Versioning and namespace
 
