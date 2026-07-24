@@ -6,12 +6,8 @@
 - **License:** Apache License 2.0
 - **Depends on:** A2A Protocol v1.0 (specification §8.4 Agent Card Signing, §8.4.1 field presence), RFC 7515 (JWS), RFC 7519 (JWT), RFC 8785 (JCS), RFC 8725 (JWT BCP).
 
-> This is a working draft. Section 9 (Relationship to prior and adjacent work),
-> Section 10 (Covered and uncovered fields), Section 11 (Security
-> Considerations), and Section 12 (Versioning and namespace) are stubs to be
-> completed in a subsequent revision. The wire format, generation, verification,
-> and Appendix A (§8.4.1 field-behavior table) sections are normative and
-> complete.
+> This is a working draft. Section 11 (Security Considerations) is a stub to be
+> completed in a subsequent revision; all other sections are drafted.
 
 ## 1. Conformance language
 
@@ -366,12 +362,46 @@ Section 11.
 
 ## 10. Covered and uncovered fields
 
-> TODO: normative table of what the token does NOT protect —
-> `Part.metadata`, `contextId`, `taskId`, `referenceTaskIds`, `message.metadata`
-> siblings, and `tenant` (card and request level) — each with rationale. Plus
-> forward-compatibility for a future Agent Card `id` (A2A #1014 / #1079): `sub`
-> stays the card URL as the origin binding; a future `id` is surfaced as an
-> additive claim, never a substitute for the URL-origin check.
+### 10.1 What the token protects
+
+The token binds the sender card version (`card_digest`), the message `role`, the
+`messageId` (`msg`), and the ordered decoded content of every part (the `parts`
+digests, each domain-separated over `src` plus `mediaType` and `filename`). The
+`iss`, `sub`, `aud`, `iat`, `exp`, and `jti` claims are themselves signed.
+
+### 10.2 What the token does not protect
+
+A verifier **MUST NOT** assume the integrity of any field not listed in
+Section 10.1. In particular, the following are outside the signed set:
+
+| Field | Why it is unsigned |
+|-------|--------------------|
+| `Part.metadata` | Per-part extension point; intermediaries and other extensions legitimately add to or modify it. |
+| `message.metadata` (siblings of the token key) | The metadata map carries other extensions' data; only the token entry is produced by this extension. |
+| `contextId` | Conversation/context routing, assigned and reassigned by the transport rather than the sender. |
+| `taskId` | Task correlation, managed by the server and task lifecycle. |
+| `referenceTaskIds` | Task references, subject to server-side correlation. |
+| `tenant` (card interface and request level) | Opaque multi-tenancy routing value, set per deployment or request; not content. |
+
+A deployment that needs any of these covered should treat it as future work — a
+broader claim set or a distinct extension. This version deliberately signs only
+message content and the card-version binding.
+
+### 10.3 Forward-compatibility with a future Agent Card `id`
+
+A2A v1.0 cards have no `id` field, so `sub` carries the card URL as the agent's
+canonical identifier, and the verifier binds on the origin match between `sub`
+and `iss` (Section 8.2). A proposal to add an optional card `id` is under
+discussion (issue #1014, PR #1079). Should it land:
+
+- `sub` **MUST** continue to carry the card URL, and the URL-origin check
+  remains the primary binding.
+- A card `id`, if present, **MAY** be surfaced as an additional claim for
+  cross-version correlation, but **MUST NOT** replace the URL-origin check. An
+  `id` asserts "the same agent across versions"; it does not attest that the
+  endorsing card is served from the expected origin.
+
+This keeps the identity binding stable across that potential change.
 
 ## 11. Security Considerations
 
@@ -385,12 +415,22 @@ Section 11.
 
 ## 12. Versioning and namespace
 
-> TODO: a breaking change MUST mint a new extension URI; graduation
-> into the `https://a2a-protocol.org/extensions/{name}/v1` namespace is itself a
-> breaking identifier change to plan for. The spec document SHOULD be hosted at
-> the extension URI (A2A extensions guidance), which is a conformance item for a
-> conformant deployment. Neutral-namespace decision (moving off the `flocker.md`
-> host) is open.
+The extension is versioned through its URI. A breaking change to the token
+format, claim semantics, or digest construction **MUST** be published under a
+new extension URI (for example `.../message-provenance/v2`); backward-compatible
+additions **MAY** be made under the existing URI.
+
+The specification document **SHOULD** be served at the extension URI itself (per
+the A2A extensions guidance) so the extension is self-describing; a conformant
+deployment treats this as a hosting requirement.
+
+Graduation into the A2A project's own extension namespace
+(`https://a2a-protocol.org/extensions/{name}/v1`) would itself be a breaking
+identifier change, since it renames both the URI by which the extension is
+declared and the prefix from which its metadata key is formed. Implementers
+**SHOULD** expect that migration to require a version transition. Adopting a
+permanent, vendor-neutral identifier (for example via a `w3id.org` redirect) in
+place of the `flocker.md` host is an open decision for a future revision.
 
 ## Appendix A. §8.4.1 field-behavior table (normative)
 
