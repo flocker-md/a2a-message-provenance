@@ -9,6 +9,10 @@
 > This is a working draft (pre-proposal): all sections are drafted and open to
 > revision. The wire format, generation, verification, and Appendix A
 > (§8.4.1 field-behavior table) are normative.
+>
+> Repository paths in this document (for example `schema/…` and `scripts/…`) are
+> relative to the root of the reference-implementation repository, not to this
+> file's location.
 
 ## 1. Conformance language
 
@@ -141,7 +145,7 @@ or failure — is local verifier policy (Section 8), not a declared capability.
 inbound provenance does not add a bespoke param — it sets `required: true` on the
 extension declaration, invoking A2A's own capability-validation path: a client
 that does not satisfy a required extension **MUST** be rejected with
-`ExtensionSupportRequiredError` (-32008) (specification §3.3.4). This is the
+`ExtensionSupportRequiredError` (-32008) (specification §3.3.2). This is the
 exclusionary option — it reclassifies the extension from data-only to a profile
 extension, gates interaction on support, and shuts out counterparties that do
 not implement it. It is available per deployment, is not the default, and does
@@ -236,7 +240,7 @@ different part kind, media type, or filename.
 | `text` | exact UTF-8 code points of `text`, no Unicode normalization (producer contract) |
 | `url` | exact UTF-8 code points of `url`, no normalization |
 | `raw` | strict RFC 4648 §4 base64 decode of `raw` (canonical padding, standard alphabet, round-trip equality required) |
-| `data` | hardened-JCS bytes of `data` (I-JSON profile; duplicate keys rejected) |
+| `data` | RFC 8785 JCS of the `data` value (I-JSON profile; see the message-parsing requirement in Section 8.2) |
 
 Each `parts[i]` entry is `{ src, alg: "sha-256", value, mediaType?, filename? }`.
 The `mediaType`/`filename` in the entry **MUST** equal those fed into the header,
@@ -269,6 +273,10 @@ A verifier operates in one of two modes:
   accept-now decisions.
 - **`audit`** — validates the full chain (signatures, digests, card version)
   without freshness gating. For later dispute resolution and evidentiary use.
+
+Before computing any digest, the verifier **MUST** parse the received message
+and the fetched Agent Card with a duplicate-key-rejecting (I-JSON, RFC 7493)
+JSON parser.
 
 Steps (both modes):
 
@@ -324,8 +332,8 @@ four layers:
 - **Identity framework** — how an agent's identity and trust are established
   (PR #1496).
 - **Identity claims** — the attributes asserted about an agent (issue #1786).
-- **Continuity** — identity persistence across sessions and versions (issue
-  #1575).
+- **Delegation and enforcement** — how authority is delegated between agents and
+  enforced (issue #1575).
 
 This extension sits on a different plane from all four: an object-level,
 verify-later receipt that binds a specific message to a specific signed card
@@ -501,9 +509,11 @@ place of the `flocker.md` host is an open decision for a future revision.
 signing payload. Producing that payload requires knowing, for every field, its
 Protocol Buffer presence class — and the core A2A specification ships no
 machine-readable form of it. This appendix supplies one, derived from
-`specification/a2a.proto` (v1.0). A verifier that does not apply these rules
-will compute a divergent `card_digest` for any card carrying an explicitly-set
-default-valued field. The reference implementation is `scripts/presence.mjs`.
+`specification/grpc/a2a.proto` (v1.0). The presence semantics themselves are
+defined in specification §5.7 and applied to card signing by §8.4.1. A verifier
+that does not apply these rules will compute a divergent `card_digest` for any
+card carrying an explicitly-set default-valued field. The reference
+implementation is `scripts/presence.mjs`.
 
 ### A.1 Presence classes and processing rules
 
@@ -755,7 +765,7 @@ AgentCard fields for brevity; a real card MUST include them.)
 
 ## Appendix B. References
 
-- A2A Protocol v1.0 — `specification/a2a.proto`, `docs/specification.md` §8.4,
+- A2A Protocol v1.0 — `specification/grpc/a2a.proto`, `docs/specification.md` §8.4,
   §8.4.1, §5.7; `docs/topics/extensions.md`;
   `docs/topics/extension-and-binding-governance.md`.
 - RFC 7515 (JWS), RFC 7519 (JWT), RFC 7517 (JWK), RFC 8725 (JWT BCP).

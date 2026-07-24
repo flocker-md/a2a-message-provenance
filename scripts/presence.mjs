@@ -7,7 +7,7 @@
 //              retained in the spec's own §8.4.1 worked example).
 //   IMPLICIT — plain scalars, repeated, map: omitted when the value equals the
 //              proto default (empty string/array/object, false, 0).
-// Field-behavior map derived from a2aproject/A2A specification/a2a.proto (v1.0).
+// Field-behavior map derived from a2aproject/A2A specification/grpc/a2a.proto (v1.0).
 //
 // Unknown fields (e.g. legacy/vendor fields on pre-1.0 cards) are kept as-is:
 // their presence in the JSON means they were explicitly set, and dropping
