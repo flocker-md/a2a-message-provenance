@@ -7,10 +7,11 @@
 - **Depends on:** A2A Protocol v1.0 (specification §8.4 Agent Card Signing, §8.4.1 field presence), RFC 7515 (JWS), RFC 7519 (JWT), RFC 8785 (JCS), RFC 8725 (JWT BCP).
 
 > This is a working draft. Section 9 (Relationship to prior and adjacent work),
-> Section 10 (Covered and uncovered fields), Appendix A (§8.4.1 field-behavior
-> table), Section 11 (Security Considerations), and Section 12 (Versioning and
-> namespace) are stubs to be completed in a subsequent revision. The wire
-> format, generation, and verification sections are normative and complete.
+> Section 10 (Covered and uncovered fields), Section 11 (Security
+> Considerations), and Section 12 (Versioning and namespace) are stubs to be
+> completed in a subsequent revision. The wire format, generation, verification,
+> and Appendix A (§8.4.1 field-behavior table) sections are normative and
+> complete.
 
 ## 1. Conformance language
 
@@ -346,14 +347,263 @@ index (Section 11) is the durable answer.
 > conformant deployment. Neutral-namespace decision (moving off the `flocker.md`
 > host) is open.
 
-## Appendix A. §8.4.1 field-behavior table
+## Appendix A. §8.4.1 field-behavior table (normative)
 
-> TODO: machine-readable REQUIRED / EXPLICIT (proto3 `optional`) /
-> IMPLICIT presence class for every field in the AgentCard tree, derived from
-> `specification/a2a.proto` and matching the reference implementations
-> (`scripts/presence.mjs`, flocker-pages `src/lib/a2a/v1/presence.ts`). Include
-> the §8.4.1 worked example (`"streaming": false` retained). Verifiers cannot
-> compute `card_digest` deterministically without this table.
+`card_digest` (Section 7.1) is computed over the JCS of the card's §8.4.1
+signing payload. Producing that payload requires knowing, for every field, its
+Protocol Buffer presence class — and the core A2A specification ships no
+machine-readable form of it. This appendix supplies one, derived from
+`specification/a2a.proto` (v1.0). A verifier that does not apply these rules
+will compute a divergent `card_digest` for any card carrying an explicitly-set
+default-valued field. The reference implementation is `scripts/presence.mjs`.
+
+### A.1 Presence classes and processing rules
+
+Each field has one of three presence classes:
+
+- **REQUIRED** — annotated `google.api.field_behavior = REQUIRED` in the proto.
+  Always kept, even when the value equals the proto default.
+- **EXPLICIT** — proto3 `optional` scalars, singular message fields, and
+  `oneof` variants. Kept whenever the field is physically present in the JSON,
+  because presence in the JSON means it was explicitly set — even to a value
+  that equals the default (for example `"streaming": false`).
+- **IMPLICIT** — plain (non-`optional`) scalars, `repeated`, and `map` fields.
+  Omitted when the value equals the proto default.
+
+The proto default is `""` (string), `false` (bool), `0` (number), `[]`
+(repeated), or `{}` (message/map). A JSON `null` or absent key is treated as not
+present.
+
+Processing (applied before RFC 8785 canonicalization, at both sign and verify
+time):
+
+1. Remove the `signatures` field entirely; it is never part of the signing
+   input (§8.4.1).
+2. For each remaining field, look up its class in the table for the enclosing
+   message. Drop IMPLICIT fields whose value equals the proto default; keep
+   REQUIRED and EXPLICIT fields.
+3. Recurse into message-typed fields (single, `repeated`, or `map`) using the
+   referenced message's table.
+4. A `google.protobuf.Struct` value (e.g. `AgentExtension.params`) is passed
+   through verbatim; its internal keys are not presence-processed.
+5. An unknown field (not in the table) is kept verbatim — its presence means it
+   was explicitly set, and dropping it would break verification of a card that
+   was signed over it.
+6. JCS-canonicalize the result.
+
+### A.2 Field tables
+
+Field names below are the ProtoJSON (camelCase) names that appear in card JSON.
+"→ Message" indicates recursion into another table; shape is single unless
+marked repeated or map.
+
+**AgentCard**
+
+| Field | Class | Recurses into |
+|-------|-------|---------------|
+| `name` | REQUIRED | |
+| `description` | REQUIRED | |
+| `supportedInterfaces` | REQUIRED | AgentInterface (repeated) |
+| `provider` | EXPLICIT | AgentProvider |
+| `version` | REQUIRED | |
+| `documentationUrl` | EXPLICIT | |
+| `capabilities` | REQUIRED | AgentCapabilities |
+| `securitySchemes` | IMPLICIT | SecurityScheme (map) |
+| `securityRequirements` | IMPLICIT | SecurityRequirement (repeated) |
+| `defaultInputModes` | REQUIRED | |
+| `defaultOutputModes` | REQUIRED | |
+| `skills` | REQUIRED | AgentSkill (repeated) |
+| `signatures` | — | removed before processing (step 1) |
+| `iconUrl` | EXPLICIT | |
+
+**AgentInterface**
+
+| Field | Class |
+|-------|-------|
+| `url` | REQUIRED |
+| `protocolBinding` | REQUIRED |
+| `tenant` | IMPLICIT |
+| `protocolVersion` | REQUIRED |
+
+**AgentProvider**
+
+| Field | Class |
+|-------|-------|
+| `url` | REQUIRED |
+| `organization` | REQUIRED |
+
+**AgentCapabilities**
+
+| Field | Class | Recurses into |
+|-------|-------|---------------|
+| `streaming` | EXPLICIT | |
+| `pushNotifications` | EXPLICIT | |
+| `extensions` | IMPLICIT | AgentExtension (repeated) |
+| `extendedAgentCard` | EXPLICIT | |
+
+**AgentExtension**
+
+| Field | Class | Notes |
+|-------|-------|-------|
+| `uri` | IMPLICIT | |
+| `description` | IMPLICIT | |
+| `required` | IMPLICIT | |
+| `params` | EXPLICIT | Struct — passed through verbatim (step 4) |
+
+**AgentSkill**
+
+| Field | Class | Recurses into |
+|-------|-------|---------------|
+| `id` | REQUIRED | |
+| `name` | REQUIRED | |
+| `description` | REQUIRED | |
+| `tags` | REQUIRED | |
+| `examples` | IMPLICIT | |
+| `inputModes` | IMPLICIT | |
+| `outputModes` | IMPLICIT | |
+| `securityRequirements` | IMPLICIT | SecurityRequirement (repeated) |
+
+**SecurityRequirement**
+
+| Field | Class | Recurses into |
+|-------|-------|---------------|
+| `schemes` | IMPLICIT | StringList (map) |
+
+**StringList**
+
+| Field | Class |
+|-------|-------|
+| `list` | IMPLICIT |
+
+**SecurityScheme** (a `oneof`; each present variant is an EXPLICIT message field)
+
+| Field | Class | Recurses into |
+|-------|-------|---------------|
+| `apiKeySecurityScheme` | EXPLICIT | APIKeySecurityScheme |
+| `httpAuthSecurityScheme` | EXPLICIT | HTTPAuthSecurityScheme |
+| `oauth2SecurityScheme` | EXPLICIT | OAuth2SecurityScheme |
+| `openIdConnectSecurityScheme` | EXPLICIT | OpenIdConnectSecurityScheme |
+| `mtlsSecurityScheme` | EXPLICIT | MutualTlsSecurityScheme |
+
+**APIKeySecurityScheme**
+
+| Field | Class |
+|-------|-------|
+| `description` | IMPLICIT |
+| `location` | REQUIRED |
+| `name` | REQUIRED |
+
+**HTTPAuthSecurityScheme**
+
+| Field | Class |
+|-------|-------|
+| `description` | IMPLICIT |
+| `scheme` | REQUIRED |
+| `bearerFormat` | IMPLICIT |
+
+**OAuth2SecurityScheme**
+
+| Field | Class | Recurses into |
+|-------|-------|---------------|
+| `description` | IMPLICIT | |
+| `flows` | REQUIRED | OAuthFlows |
+| `oauth2MetadataUrl` | IMPLICIT | |
+
+**OpenIdConnectSecurityScheme**
+
+| Field | Class |
+|-------|-------|
+| `description` | IMPLICIT |
+| `openIdConnectUrl` | REQUIRED |
+
+**MutualTlsSecurityScheme**
+
+| Field | Class |
+|-------|-------|
+| `description` | IMPLICIT |
+
+**OAuthFlows** (each present variant is an EXPLICIT message field)
+
+| Field | Class | Recurses into |
+|-------|-------|---------------|
+| `authorizationCode` | EXPLICIT | AuthorizationCodeOAuthFlow |
+| `clientCredentials` | EXPLICIT | ClientCredentialsOAuthFlow |
+| `deviceCode` | EXPLICIT | DeviceCodeOAuthFlow |
+| `implicit` | EXPLICIT | ImplicitOAuthFlow |
+| `password` | EXPLICIT | PasswordOAuthFlow |
+
+**AuthorizationCodeOAuthFlow**
+
+| Field | Class |
+|-------|-------|
+| `authorizationUrl` | REQUIRED |
+| `tokenUrl` | REQUIRED |
+| `refreshUrl` | IMPLICIT |
+| `scopes` | REQUIRED |
+
+**ClientCredentialsOAuthFlow**
+
+| Field | Class |
+|-------|-------|
+| `tokenUrl` | REQUIRED |
+| `refreshUrl` | IMPLICIT |
+| `scopes` | REQUIRED |
+
+**DeviceCodeOAuthFlow**
+
+| Field | Class |
+|-------|-------|
+| `deviceAuthorizationUrl` | REQUIRED |
+| `tokenUrl` | REQUIRED |
+| `refreshUrl` | IMPLICIT |
+| `scopes` | REQUIRED |
+
+**ImplicitOAuthFlow**
+
+| Field | Class |
+|-------|-------|
+| `authorizationUrl` | IMPLICIT |
+| `refreshUrl` | IMPLICIT |
+| `scopes` | IMPLICIT |
+
+**PasswordOAuthFlow**
+
+| Field | Class |
+|-------|-------|
+| `tokenUrl` | IMPLICIT |
+| `refreshUrl` | IMPLICIT |
+| `scopes` | IMPLICIT |
+
+### A.3 Worked example
+
+An illustrative card fragment that exercises all three classes at their default
+values:
+
+```json
+{
+  "name": "Example Agent",
+  "description": "",
+  "skills": [],
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "extensions": []
+  }
+}
+```
+
+After §8.4.1 processing and JCS canonicalization:
+
+```json
+{"capabilities":{"pushNotifications":false,"streaming":false},"description":"","name":"Example Agent","skills":[]}
+```
+
+`name`/`description`/`skills` are REQUIRED, so they are retained even though
+`description` and `skills` hold default values. `streaming` and
+`pushNotifications` are EXPLICIT and were physically present, so they are
+retained despite equalling `false`. `extensions` is IMPLICIT and equals the
+empty-array default, so it is dropped. (The fragment omits other REQUIRED
+AgentCard fields for brevity; a real card MUST include them.)
 
 ## Appendix B. References
 
