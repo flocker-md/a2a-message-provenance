@@ -9,8 +9,8 @@
 > This is a working draft. Section 9 (Relationship to prior and adjacent work),
 > Section 10 (Covered and uncovered fields), Appendix A (§8.4.1 field-behavior
 > table), Section 11 (Security Considerations), and Section 12 (Versioning and
-> namespace) are stubs pending the tracked issues noted inline. The wire format,
-> generation, and verification sections are normative and complete.
+> namespace) are stubs to be completed in a subsequent revision. The wire
+> format, generation, and verification sections are normative and complete.
 
 ## 1. Conformance language
 
@@ -148,7 +148,7 @@ exclusionary option — it reclassifies the extension from data-only to a profil
 extension, gates interaction on support, and shuts out counterparties that do
 not implement it. It is available per deployment, is not the default, and does
 not override or preclude other verification methods a party may use separately.
-*(Positioning expanded in Section 9 / FLO-6.)*
+*(Positioning expanded in Section 9.)*
 
 ## 6. Token format
 
@@ -255,13 +255,13 @@ so relabeling breaks verification.
 4. Assemble the claims set (Section 6.3); set `iss` to the platform origin and
    `sub` to the sender card URL (same origin).
 5. Sign the claims as a compact JWS with the header of Section 6.2, using a
-   dedicated message-signing key (Section 11 / FLO-9).
+   dedicated message-signing key (Section 11).
 6. Store the JWS at the metadata key of Section 6.1; declare the extension URI
    in `message.extensions`.
 
 In the blind-signing deployment (Variant A), the platform signs over the digest
 material the sending agent submits and never holds message content. Variant B
-(per-profile keys published in the card) is deferred — see Section 11 / FLO-9.
+(per-profile keys published in the card) is deferred — see Section 11.
 
 ### 8.2 Verification (`live` and `audit` modes)
 
@@ -306,11 +306,11 @@ handles both the token-present and token-absent cases:
 To resist rotate-to-undeclare downgrades (an attacker strips the token, then
 mutates the card to drop the declaration), a verifier SHOULD pin an observed
 `signsMessages: true` declaration with a TTL. The append-only historical card
-index (Section 11 / FLO-9) is the durable answer.
+index (Section 11) is the durable answer.
 
-## 9. Relationship to prior and adjacent work — STUB (FLO-6)
+## 9. Relationship to prior and adjacent work
 
-> TODO (FLO-6): position against the RFC 9421 identity stack (A2A #1829, #1496
+> TODO: position against the RFC 9421 identity stack (A2A #1829, #1496
 > §6): object-level verify-later receipt vs transport request signature; pinned
 > anchors vs self-dereferencing `keyid` URLs; `card_digest` version pinning
 > (absent upstream). Map onto the community four-layer vocabulary (wire /
@@ -318,18 +318,18 @@ index (Section 11 / FLO-9) is the durable answer.
 > #2028 (unsigned actor/delegation chain that also uses "provenance"): ours
 > means cryptographic, object-level message provenance.
 
-## 10. Covered and uncovered fields — STUB (FLO-8)
+## 10. Covered and uncovered fields
 
-> TODO (FLO-8): normative table of what the token does NOT protect —
+> TODO: normative table of what the token does NOT protect —
 > `Part.metadata`, `contextId`, `taskId`, `referenceTaskIds`, `message.metadata`
 > siblings, and `tenant` (card and request level) — each with rationale. Plus
 > forward-compatibility for a future Agent Card `id` (A2A #1014 / #1079): `sub`
 > stays the card URL as the origin binding; a future `id` is surfaced as an
 > additive claim, never a substitute for the URL-origin check.
 
-## 11. Security Considerations — STUB (FLO-9)
+## 11. Security Considerations
 
-> TODO (FLO-9): key substitution, token stripping, replay, cross-context reuse,
+> TODO: key substitution, token stripping, replay, cross-context reuse,
 > and blind-signing (Variant A) non-repudiation liability, each with mitigation.
 > Variant B (per-profile keys published in the card) normative sketch. Blind-
 > signing MUSTs: dedicated message-signing keys separate from card keys,
@@ -337,18 +337,18 @@ index (Section 11 / FLO-9) is the durable answer.
 > rate/abuse controls on the signing endpoint. "Why not a Verifiable Credential
 > / RFC 9421 / plain OAuth" rationale appendix.
 
-## 12. Versioning and namespace — STUB (FLO-10)
+## 12. Versioning and namespace
 
-> TODO (FLO-10): a breaking change MUST mint a new extension URI; graduation
+> TODO: a breaking change MUST mint a new extension URI; graduation
 > into the `https://a2a-protocol.org/extensions/{name}/v1` namespace is itself a
 > breaking identifier change to plan for. The spec document SHOULD be hosted at
-> the extension URI (A2A extensions guidance) — tracked as FLO-12 /
-> flocker-pages#41. Neutral-namespace decision (moving off the `flocker.md` host)
-> is open.
+> the extension URI (A2A extensions guidance), which is a conformance item for a
+> conformant deployment. Neutral-namespace decision (moving off the `flocker.md`
+> host) is open.
 
-## Appendix A. §8.4.1 field-behavior table — STUB (FLO-7)
+## Appendix A. §8.4.1 field-behavior table
 
-> TODO (FLO-7): machine-readable REQUIRED / EXPLICIT (proto3 `optional`) /
+> TODO: machine-readable REQUIRED / EXPLICIT (proto3 `optional`) /
 > IMPLICIT presence class for every field in the AgentCard tree, derived from
 > `specification/a2a.proto` and matching the reference implementations
 > (`scripts/presence.mjs`, flocker-pages `src/lib/a2a/v1/presence.ts`). Include

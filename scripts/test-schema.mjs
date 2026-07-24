@@ -44,15 +44,14 @@ for (const [i, part] of message.parts.entries()) {
   expect(validatePart(part), `part[${i}] validates against the Part definition`, validatePart.errors ? JSON.stringify(validatePart.errors.slice(0, 2)) : '');
 }
 
-// Known gap, documented: the production Flocker card predates the v1.0
-// AgentCard shape (flocker-pages#39 tracks the upgrade). Reported, not
-// gated, until that ships.
+// Known gap, documented: the example card predates the v1.0 AgentCard shape.
+// Reported, not gated.
 const validateCard = ajv.getSchema(refId('Agent Card'));
 const card = readJson('mock/agent-card.json');
 const cardOk = validateCard(card);
 console.log(
   `  ${cardOk ? 'PASS' : 'KNOWN-GAP'}  agent card vs v1.0 AgentCard definition${
-    cardOk ? '' : ` — ${validateCard.errors.length} error(s), tracked in flocker-pages#39`
+    cardOk ? '' : ` — ${validateCard.errors.length} error(s)`
   }`
 );
 
