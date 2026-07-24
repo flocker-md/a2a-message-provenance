@@ -1,0 +1,12 @@
+{
+  "name": "a2a-message-provenance",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/test-jcs.mjs && node scripts/test-presence.mjs && node scripts/test-schema.mjs && node scripts/sign-message.mjs && node scripts/verify-message.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

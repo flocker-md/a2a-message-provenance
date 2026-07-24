@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flocker.md/a2a/ext/message-provenance/v1/token.schema.json",
+  "title": "A2A Message Provenance Token (metadata value)",
+  "description": "Value stored at message.metadata['https://flocker.md/a2a/ext/message-provenance/v1/token']: a compact JWS/JWT. Protected header MUST be {alg: ES256, typ: a2a-msg-provenance+jwt, kid}. Claims per claims.schema.json.",
+  "type": "string",
+  "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flocker.md/a2a/ext/message-provenance/v1/claims.schema.json",
+  "title": "A2A Message Provenance Token Claims",
+  "description": "JWT claims for the message provenance token (typ: a2a-msg-provenance+jwt). sub is the sender's Agent Card URL — the agent's canonical identifier per A2A v1.0 (cards have no id field). Content is bound via domain-separated per-part digests over decoded content; the card version is pinned by card_digest over the section 8.4 signing payload (presence-processed, signatures excluded).",
+  "type": "object",
+  "properties": {
+    "iss": {
+      "type": "string",
+      "format": "uri",
+      "description": "Platform origin, e.g. https://flocker.md. Verifiers resolve keys only from this issuer's pinned JWKS."
+    },
+    "sub": {
+      "type": "string",
+      "format": "uri",
+      "description": "Sender Agent Card URL. Origin MUST match iss; the verifier fetches and validates this card."
+    },
+    "aud": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Recipient identifier (card URL, endpoint URL, or agreed name)."
+    },
+    "iat": { "type": "integer", "description": "Unix seconds at signing." },
+    "exp": {
+      "type": "integer",
+      "description": "Unix seconds expiry. Enforced in live mode; audit-mode verifiers validate the full chain without exp gating."
+    },
+    "jti": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{22,}$",
+      "description": "Unique token id; live-mode replay-cache key, scoped per aud, inserted only after full verification."
+    },
+    "card_digest": {
+      "$ref": "#/$defs/digest",
+      "description": "SHA-256 over JCS of the section 8.4 signing payload (presence-processed card minus signatures). Pins the exact card version endorsed at signing time."
+    },
+    "msg": { "type": "string", "minLength": 1, "description": "messageId of the enclosing message." },
+    "role": {
+      "enum": ["ROLE_USER", "ROLE_AGENT"],
+      "description": "The message's role, per the proto enum JSON form."
+    },
+    "parts": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered per-part digests; count MUST equal the message's part count. Digest input is UTF8(JCS(header)) || 0x00 || content-bytes, where header is {src, mediaType?, filename?} — domain separation prevents cross-kind or relabeled reuse.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "src": {
+            "enum": ["text", "raw", "data", "url"],
+            "description": "Which Part oneof member the digest covers."
+          },
+          "alg": { "const": "sha-256" },
+          "value": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "description": "b64url digest. Content bytes: text/url = exact UTF-8 code points (no unicode normalization); raw = strict RFC 4648 base64-decoded bytes; data = hardened-JCS bytes (I-JSON profile, duplicate keys rejected)."
+          },
+          "mediaType": { "type": "string" },
+          "filename": { "type": "string" }
+        },
+        "required": ["src", "alg", "value"],
+        "additionalProperties": false
+      }
+    },
+    "media": { "type": "string", "description": "Declared media type of the primary payload." },
+    "schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "Schema URI the recipient should interpret structured parts under."
+    }
+  },
+  "required": ["iss", "sub", "aud", "iat", "exp", "jti", "card_digest", "msg", "role", "parts"],
+  "additionalProperties": false,
+  "$defs": {
+    "digest": {
+      "type": "object",
+      "properties": {
+        "alg": { "const": "sha-256" },
+        "value": { "type": "string", "pattern": "^[A-Za-z0-9_-]{43}$" }
+      },
+      "required": ["alg", "value"],
+      "additionalProperties": false
+    }
+  }
+}
