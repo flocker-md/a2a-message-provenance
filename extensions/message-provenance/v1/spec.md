@@ -311,13 +311,58 @@ index (Section 11) is the durable answer.
 
 ## 9. Relationship to prior and adjacent work
 
-> TODO: position against the RFC 9421 identity stack (A2A #1829, #1496
-> §6): object-level verify-later receipt vs transport request signature; pinned
-> anchors vs self-dereferencing `keyid` URLs; `card_digest` version pinning
-> (absent upstream). Map onto the community four-layer vocabulary (wire /
-> identity / claims / continuity). Include the terminology disambiguation vs
-> #2028 (unsigned actor/delegation chain that also uses "provenance"): ours
-> means cryptographic, object-level message provenance.
+Several efforts in the A2A ecosystem address agent identity and message
+integrity. This extension is designed to compose with them, not to replace
+them; a deployment may run any of them alongside this one.
+
+### 9.1 The A2A identity and signing work
+
+Discussion on the A2A repository has organized agent-identity work into roughly
+four layers:
+
+- **Wire signature** — signing the transport request itself. The leading
+  proposal (issue #1829, and §6 of PR #1496) adopts RFC 9421 HTTP Message
+  Signatures with Ed25519 over request components such as `@method`, `@path`,
+  and `content-digest`.
+- **Identity framework** — how an agent's identity and trust are established
+  (PR #1496).
+- **Identity claims** — the attributes asserted about an agent (issue #1786).
+- **Continuity** — identity persistence across sessions and versions (issue
+  #1575).
+
+This extension sits on a different plane from all four: an object-level,
+verify-later receipt that binds a specific message to a specific signed card
+*version*. Its nearest neighbor is the wire-signature layer, and the contrast
+with it is the clearest way to place this work.
+
+### 9.2 Contrast with RFC 9421 transport request signing
+
+| Property | RFC 9421 wire signature (#1829 / #1496 §6) | This extension |
+|---|---|---|
+| What is signed | The HTTP request — method, path, headers, body digest | The A2A message object — role and per-part content digests |
+| Lifetime | The transport hop; verifiable by the receiving endpoint at request time | Travels in the message; verifiable later by a party who was not on the connection |
+| Key resolution | A `keyid` / key URL dereferenced by the verifier | Pre-configured trust anchors only; in-token key URLs are never dereferenced (Section 4) |
+| Card-version binding | None | `card_digest` pins the exact endorsed card version |
+
+The two are complementary. RFC 9421 authenticates the live request between two
+endpoints; this extension produces a durable, third-party-checkable receipt
+bound to a card version. A deployment can apply both — the request is signed in
+transit and each message additionally carries a provenance receipt.
+
+### 9.3 Terminology: "provenance"
+
+Other proposals use "provenance" for different guarantees. In particular, the
+actor/delegation-chain work (issue #2028) records an *attribution* chain — who
+acted on whose behalf — without a cryptographic binding of message content. In
+this document, "provenance" means a cryptographic, object-level binding of a
+message to the signed card version that endorsed it. The two are compatible and
+can coexist in one message; they answer different questions.
+
+### 9.4 Other approaches
+
+The rationale for expressing this as a card-anchored JWT receipt rather than a
+Verifiable Credential, a plain OAuth token, or a bespoke envelope is given in
+Section 11.
 
 ## 10. Covered and uncovered fields
 
