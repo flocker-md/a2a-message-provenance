@@ -81,6 +81,12 @@ with it, and is deliberately scoped as one composable verification method among
 others. It is published as an open community extension and is seeking
 independent co-implementers. Feedback and implementations are welcome.
 
+The extension URI is hosted under `flocker.md` today. A future revision may adopt
+a permanent, vendor-neutral identifier (for example via a `w3id.org` redirect) or
+graduate into the A2A project's own `a2a-protocol.org/extensions/` namespace.
+Either move renames the URI from which the metadata key is formed and is
+therefore a versioned, breaking identifier change — see spec Section 12.
+
 ## Attribution
 
 Authored and maintained by [@hcjmartin](https://github.com/hcjmartin) under
