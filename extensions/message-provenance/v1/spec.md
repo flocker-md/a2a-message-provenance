@@ -263,7 +263,7 @@ so relabeling breaks verification.
 
 In the blind-signing deployment (Variant A), the platform signs over the digest
 material the sending agent submits and never holds message content. Variant B
-(per-profile keys published in the card) is deferred — see Section 11.
+(per-agent keys published in the card) is deferred — see Section 11.
 
 ### 8.2 Verification (`live` and `audit` modes)
 
@@ -451,12 +451,12 @@ A conformant Variant A deployment:
 - **MUST** apply rate and abuse controls on the signing endpoint, since the
   endpoint signs on behalf of authenticated agents.
 
-### 11.3 Per-profile keys (Variant B)
+### 11.3 Per-agent keys (Variant B)
 
-Variant B, deferred to a future revision, publishes a per-profile signing key in
+Variant B, deferred to a future revision, publishes a per-agent signing key in
 the Agent Card and has the agent (not the platform) sign its own messages. This
-strengthens non-repudiation — the signature binds to a key the profile controls,
-with no blind-signing intermediary — at the cost of per-profile key management
+strengthens non-repudiation — the signature binds to a key the agent controls,
+with no blind-signing intermediary — at the cost of per-agent key management
 and card-published key rotation. The claim set and digest construction are
 unchanged; only the key that signs the token and the JWKS it resolves from
 differ. A future revision will specify the card key-publication format and the
