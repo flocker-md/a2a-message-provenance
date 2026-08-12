@@ -16,6 +16,9 @@ import { EXT_URI, METADATA_KEY, TOKEN_TYP, digestPart, cardDigest } from './sign
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (p) => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
+// Received artifacts (the message, the card) take the §8.2 duplicate-key-
+// rejecting parse; readJson stays for local trust-anchor fixtures.
+const readJsonStrict = (p) => parseJsonStrict(fs.readFileSync(path.join(root, p), 'utf8'));
 
 // Pinned trust anchors: keys resolve ONLY from here; kid/jku inside tokens
 // and cards is never dereferenced on its own authority. Bilateral-v1 model —
@@ -172,7 +175,7 @@ const main = process.argv[1] === fileURLToPath(import.meta.url);
 if (main) {
   const EXPECTED_AUD = 'https://ramenclub.so/agents/showcase-coordinator';
   const jtiCache = new Set();
-  const message = readJson('mock/message.signed.json');
+  const message = readJsonStrict('mock/message.signed.json');
   const privateJwk = readJson('keys/mock-signing-key.jwk.json');
   let suiteFailures = 0;
   const expect = (cond, label) => {
@@ -233,6 +236,19 @@ if (main) {
     expect(!r.verified, 'rejected: domain separation makes text/url digests differ');
   }
 
+  console.log('== N2d: duplicate object key in received message text ==');
+  {
+    const raw = fs.readFileSync(path.join(root, 'mock/message.signed.json'), 'utf8');
+    const dup = raw.replace('"week":', '"week": "2026-01-01", "week":');
+    let rejected = false;
+    try {
+      parseJsonStrict(dup);
+    } catch {
+      rejected = true;
+    }
+    expect(dup !== raw && rejected, 'rejected: §8.2 strict parse refuses duplicate keys in the message');
+  }
+
   console.log('== N3: tampered claims (re-encoded aud) ==');
   {
     const m = structuredClone(message);
@@ -249,7 +265,7 @@ if (main) {
 
   console.log('== N5: stripped token, declaring card (via verifyInbound gate) ==');
   {
-    const card = readJson('mock/agent-card.json');
+    const card = readJsonStrict('mock/agent-card.json');
     const declaringCard = structuredClone(card);
     declaringCard.capabilities = {
       extensions: [{ uri: EXT_URI, description: 'Message provenance', params: { signsMessages: true } }],

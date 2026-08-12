@@ -35,8 +35,10 @@ cross-check asserts.
 node scripts/gen-golden.mjs
 ```
 
-Requires `keys/mock-signing-key.jwk.json` (gitignored). Prints the canonical
-payload, `card_digest`, each part digest, and the token.
+Requires `keys/mock-signing-key.jwk.json` (committed as a mock test fixture —
+regenerating it with `generate-keys.mjs` changes the signed `token`, though
+digests stay byte-identical). Prints the canonical payload, `card_digest`,
+each part digest, and the token.
 
 ## Cross-check (Python side)
 

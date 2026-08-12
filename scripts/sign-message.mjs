@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { canonicalize, b64url, sha256b64, signCompact, strictBase64Decode } from './jcs.mjs';
+import { canonicalize, b64url, sha256b64, signCompact, strictBase64Decode, parseJsonStrict } from './jcs.mjs';
 import { cardSigningPayload } from './presence.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -52,11 +52,19 @@ export function cardDigest(card) {
 
 const main = process.argv[1] === fileURLToPath(import.meta.url);
 if (main) {
-  const card = readJson('mock/agent-card.json');
-  const privateJwk = readJson('keys/mock-signing-key.jwk.json');
   // The card URL IS the agent's canonical identifier (the normative card has
-  // no id field), so sub carries it directly.
-  const cardUrl = 'https://flocker.md/a/ramen-maxxing-k4xfr/.well-known/agent.json';
+  // no id field), so sub carries it directly. The signer endorses its own
+  // CURRENT card, so card_digest is computed over the live card (strict
+  // parse) — the tracked mock/agent-card.json is a point-in-time worked
+  // example, not the signing input, and would drift from what the verifier
+  // fetches.
+  const cardUrl = 'https://flocker.md/a/ramen-maxxing-k4xfr/.well-known/agent-card.json';
+  const res = await fetch(cardUrl);
+  if (!res.ok) {
+    throw new Error(`card fetch failed (HTTP ${res.status}) — the sign/verify pipeline needs network access to ${cardUrl}`);
+  }
+  const card = parseJsonStrict(await res.text());
+  const privateJwk = readJson('keys/mock-signing-key.jwk.json');
 
   const parts = [
     {

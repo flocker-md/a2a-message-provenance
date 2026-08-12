@@ -1,5 +1,10 @@
-keys/
+keys/*
+!keys/mock-signing-key.jwk.json
+!keys/mock-jwks.json
 node_modules/
 .flocker
 internal/
 mock/message.signed.json
+.agents
+.claude
+skills-lock.json

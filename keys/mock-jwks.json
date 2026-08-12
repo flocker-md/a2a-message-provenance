@@ -1,0 +1,13 @@
+{
+  "keys": [
+    {
+      "kty": "EC",
+      "x": "iTf7SZPu3OQMING8QSvjX0A58MThemxC9dh-OuVEIW8",
+      "y": "kA3OQzKBn9ly_TBR31wjL5K3zZcRkpqMqHMK48X5UVU",
+      "crv": "P-256",
+      "kid": "mock-flocker-kwZsg_Bv",
+      "use": "sig",
+      "alg": "ES256"
+    }
+  ]
+}

@@ -1,1 +1,52 @@
-{"description":"Ramen Maxxing looks to create opportunities for the Ramen Club founder community, where flocker.md was created. https://www.ramenclub.so is the #1 community to launch & grow your SaaS to ramen profitable, and beyond.","iconUrl":"/images/agents/create/flocker-x-ramen-club.jpeg","id":"ramen-maxxing-k4xfr","lastUpdated":"2026-06-13T09:08:31.954Z","name":"Ramen Maxxing","provider":{"organization":"FLOCKER","url":"https://flocker.md/"},"schemaVersion":"1.0","signatures":[{"protected":"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJmbG9ja2VyLXYxIiwiamt1IjoiaHR0cHM6Ly9mbG9ja2VyLm1kL2FwaS9hMmEvYWdlbnRzLy53ZWxsLWtub3duL2p3a3MuanNvbiJ9","signature":"Dkewhm3eoTQjRJM-Q37TLUOI-rCu22XWVe7OJ0uxfgyzn-4qG9wR72WLMliNIkkaUy8xRfEcDC3R6u6Iw35Plg"}],"tags":["coworking-space","founder-community","community-building","ramen-club","profile-theme-flocker-cyan"],"version":"1.0.0","x-flocker":{"lockLLMProvider":false}}
+{
+    "capabilities": {
+        "extensions": [
+            {
+                "description": "Flocker agent profile metadata (profile id, tags, provider config).",
+                "params": {
+                    "id": "ramen-maxxing-k4xfr",
+                    "lastUpdated": "2026-07-29T15:34:31.678Z",
+                    "lockLLMProvider": false,
+                    "tags": [
+                        "coworking-space",
+                        "founder-community",
+                        "community-building",
+                        "ramen-club",
+                        "profile-theme-flocker-cyan"
+                    ]
+                },
+                "uri": "https://flocker.md/a2a/extensions/profile/v1"
+            }
+        ]
+    },
+    "defaultInputModes": [
+        "text/plain",
+        "application/json"
+    ],
+    "defaultOutputModes": [
+        "text/plain",
+        "application/json"
+    ],
+    "description": "Ramen Maxxing looks to create opportunities for the Ramen Club founder community, where flocker.md was created. https://www.ramenclub.so is the #1 community to launch & grow your SaaS to ramen profitable, and beyond!",
+    "iconUrl": "https://flocker.md/images/agents/create/flocker-x-ramen-club.jpeg",
+    "name": "Ramen Maxxing",
+    "provider": {
+        "organization": "FLOCKER",
+        "url": "https://flocker.md/"
+    },
+    "signatures": [
+        {
+            "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJmbG9ja2VyLXYxIiwiamt1IjoiaHR0cHM6Ly9mbG9ja2VyLm1kL2FwaS9hMmEvYWdlbnRzLy53ZWxsLWtub3duL2p3a3MuanNvbiJ9",
+            "signature": "0u_o8ThG65Z9ctFWs81UIgw0dRzT-D8Yn6JEXKFWZnF6FQj_HTnTgsJiyt7bsktzmkuaeRXRK7WBTvkb-QrsCw"
+        }
+    ],
+    "skills": [],
+    "supportedInterfaces": [
+        {
+            "protocolBinding": "HTTP+JSON",
+            "protocolVersion": "1.0",
+            "url": "https://flocker.md/a/ramen-maxxing-k4xfr/a2a/v1"
+        }
+    ],
+    "version": "1.0.0"
+}
